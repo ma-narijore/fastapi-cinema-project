@@ -18,15 +18,7 @@ from sqlalchemy.orm import (
 
 from app.core.database import Base
 
-class UserGroup(str, Enum):
-    USER = "user"
-    MODERATOR = "moderator"
-    ADMIN = "admin"
-
-
-class Gender(str, Enum):
-    MAN = "man"
-    WOMAN = "woman"
+from schemas import UserGroup, Gender
 
 
 class UserGroupModel(Base):
