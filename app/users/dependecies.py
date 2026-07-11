@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
 
+from pwdlib import PasswordHash
+
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -13,3 +15,5 @@ def get_db() -> Generator[Session, None, None]:
 
     finally:
         db.close()
+
+password_hash = PasswordHash.recommended()
