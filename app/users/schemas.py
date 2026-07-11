@@ -41,7 +41,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     is_active: bool
     group: UserGroup
-    gender: Gender
+    gender: Gender | None
     created_at: datetime
 
     model_config = {

@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from sqlalchemy import (
     String,
@@ -17,7 +17,7 @@ from sqlalchemy.orm import (
 
 from app.core.database import Base
 
-from schemas import UserGroup, Gender
+from app.users.schemas import UserGroup, Gender
 
 
 class UserGroupModel(Base):
@@ -58,13 +58,13 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.utcnow,
+        default=datetime.now(timezone.utc),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
     )
 
     group_id: Mapped[int] = mapped_column(
