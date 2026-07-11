@@ -27,10 +27,13 @@ def create_refresh_token(user: User) -> str:
 
     refresh_payload = {
         "sub": user.id,
-        "exp": datetime.now(timezone.utc) + timedelta(days=float(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS"))),
-        "type": "refresh"
+        "exp": datetime.now(timezone.utc)
+        + timedelta(days=float(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS"))),
+        "type": "refresh",
     }
-    refresh_token = jwt.encode(refresh_payload, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+    refresh_token = jwt.encode(
+        refresh_payload, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM")
+    )
 
     return refresh_token
 
@@ -38,40 +41,30 @@ def create_refresh_token(user: User) -> str:
 def create_jwt_token(data: UserResponse) -> Dict[str, str]:
     payload = data.model_dump()
 
-    expires_in = datetime.now(timezone.utc) + timedelta(minutes=float(os.getenv("JWT_EXPIRES_IN")))
+    expires_in = datetime.now(timezone.utc) + timedelta(
+        minutes=float(os.getenv("JWT_EXPIRES_IN"))
+    )
 
     payload.update({"exp": expires_in})
 
-    jwt_token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+    jwt_token = jwt.encode(
+        payload, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM")
+    )
 
     refresh_token = create_refresh_token(payload)
 
-    return {
-        "access_token": jwt_token,
-        "refresh_token": refresh_token
-    }
+    return {"access_token": jwt_token, "refresh_token": refresh_token}
 
 
 class UserRepository:
-
     def __init__(self, db: Session):
         self.db = db
 
-
     def get_by_id(self, user_id: int) -> type[User] | None:
-        return (
-            self.db.query(User)
-            .filter(User.id == user_id)
-            .first()
-        )
-
+        return self.db.query(User).filter(User.id == user_id).first()
 
     def get_by_email(self, email: EmailStr) -> type[User] | None:
-        return (
-            self.db.query(User)
-            .filter(User.email == email)
-            .first()
-        )
+        return self.db.query(User).filter(User.email == email).first()
 
     def create_user(self, user: User) -> User:
 
@@ -87,7 +80,6 @@ class UserRepository:
 
         return user
 
-
     def delete_user(self, user: User):
 
         self.db.delete(user)
@@ -95,14 +87,9 @@ class UserRepository:
 
         return "User deleted"
 
-
     def get_all_users(self):
 
-        return (
-            self.db.query(User)
-            .all()
-        )
-
+        return self.db.query(User).all()
 
     def create_profile(self, profile: UserProfile) -> UserProfile:
         self.db.add(profile)
@@ -111,7 +98,6 @@ class UserRepository:
 
         return profile
 
-
     def update_profile(self, profile: UserProfileUpdate) -> type[UserProfile] | None:
 
         self.db.commit()
@@ -119,25 +105,13 @@ class UserRepository:
 
         return (
             self.db.query(UserProfile)
-            .filter(
-                UserProfile.user_id == User.profile
-            )
+            .filter(UserProfile.user_id == User.profile)
             .first()
         )
 
-    
     def get_profile(self, user_id: int) -> type[UserProfile] | None:
 
-        return (
-            self.db.query(UserProfile)
-            .filter(
-                UserProfile.id == user_id
-            )
-            .first()
-        )
-
-
-
+        return self.db.query(UserProfile).filter(UserProfile.id == user_id).first()
 
     def save_refresh_token(self, refresh_token: RefreshToken):
         self.db.add(refresh_token)
@@ -147,16 +121,8 @@ class UserRepository:
 
         return refresh_token
 
-
     def get_refresh_token(self, token: str) -> RefreshToken | None:
-        return (
-            self.db.query(RefreshToken)
-            .first(
-                RefreshToken.token == token
-            )
-            .first()
-        )
-
+        return self.db.query(RefreshToken).first(RefreshToken.token == token).first()
 
     def delete_refresh_token(self, token: str):
 

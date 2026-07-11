@@ -58,18 +58,16 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.now(timezone.utc),
+        default=lambda: datetime.now(timezone.utc),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.now(timezone.utc),
-        onupdate=datetime.now(timezone.utc),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("user_groups.id")
-    )
+    group_id: Mapped[int] = mapped_column(ForeignKey("user_groups.id"))
 
     group = relationship(
         "UserGroupModel",
@@ -179,9 +177,7 @@ class RefreshToken(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id")
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     token: Mapped[str] = mapped_column(
         String(255),
