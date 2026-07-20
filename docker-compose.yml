@@ -16,5 +16,41 @@ services:
 
     restart: unless-stopped
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cinema"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: fastapi_redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: fastapi_mailpit
+
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  redis_data:

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from app.celery_app import celery_app
 from app.core.database import SessionLocal
-from app.core.email import send_activation_email
+from app.core.email_service import send_activation_email
 from app.users.models import ActivationToken
 
 

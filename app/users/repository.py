@@ -17,7 +17,6 @@ from app.users.models import (
 )
 
 from app.users.schemas import UserResponse, UserProfileUpdate
-from users.models import RefreshToken
 
 dotenv.load_dotenv()
 
