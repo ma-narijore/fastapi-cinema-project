@@ -43,6 +43,11 @@ class Gender(str, Enum):
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
+    @field_validator("password")
+    @classmethod
+    def _check(cls, v):
+        validate_password_complexity(v)
+        return v
 
 
 class UserLogin(BaseModel):
@@ -115,3 +120,15 @@ class MessageRequest(BaseModel):
 
 class ResendActivationRequest(BaseModel):
     email: EmailStr
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ChangeGroupRequest(BaseModel):
+    group: UserGroup

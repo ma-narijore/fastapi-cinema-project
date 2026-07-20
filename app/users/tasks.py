@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from app.celery_app import celery_app
 from app.core.database import SessionLocal
-from app.core.email_service import send_activation_email
+from app.core.email_service import send_activation_email, send_reset_email
 from app.users.models import ActivationToken
 
 
@@ -34,3 +34,8 @@ def delete_expired_activation_tokens() -> int:
 
     finally:
         db.close()
+
+
+@celery_app.task(name="app.users.tasks.send_reset_email_task")
+def send_reset_email_task(email: str, token: str) -> None:
+    send_reset_email(email, token)

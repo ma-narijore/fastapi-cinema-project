@@ -27,3 +27,12 @@ def send_activation_email(to: str, token: str) -> None:
             "If the link expires, you can request a new one."
         ),
     )
+
+
+def send_reset_email(to: str, token: str) -> None:
+    link = f"{settings.FRONTEND_URL}/users/reset-password?token={token}"
+    send_email(
+        to=to,
+        subject="Reset your password",
+        body=f"Reset your password using this link:\n\n{link}",
+    )

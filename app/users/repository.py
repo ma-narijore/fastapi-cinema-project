@@ -13,10 +13,12 @@ from app.users.models import (
     User,
     UserProfile,
     RefreshToken,
-    ActivationToken
+    ActivationToken,
+    PasswordResetToken,
 )
 
 from app.users.schemas import UserResponse, UserProfileUpdate
+from users.models import PasswordResetToken
 
 dotenv.load_dotenv()
 
@@ -125,13 +127,6 @@ class UserRepository:
     def get_refresh_token(self, token: str) -> type[RefreshToken] | None:
         return  self.db.query(RefreshToken).filter(RefreshToken.token == token).first()
 
-    def delete_refresh_token(self, token: str):
-
-        self.db.delete(token)
-        self.db.commit()
-
-        return "Refresh token deleted"
-
     def get_activation_token(self, token: str) -> type[ActivationToken] | None:
         return (
             self.db.query(ActivationToken)
@@ -162,3 +157,47 @@ class UserRepository:
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    def delete_refresh_token(self, token: RefreshToken):
+        self.db.delete(token)
+        self.db.commit()
+        return "Refresh token deleted"
+
+    # --- password reset tokens ---
+    def get_password_reset_token(self, token: str) -> type[PasswordResetToken] | None:
+        return (
+            self.db.query(PasswordResetToken)
+            .filter(PasswordResetToken.token == token)
+            .first()
+        )
+
+    def get_password_reset_token_by_user(self, user_id: int) -> type[PasswordResetToken] | None:
+        return (
+            self.db.query(PasswordResetToken)
+            .filter(PasswordResetToken.user_id == user_id)
+            .first()
+        )
+
+    def save_password_reset_token(self, token: PasswordResetToken) -> PasswordResetToken:
+        self.db.add(token)
+        self.db.commit()
+        self.db.refresh(token)
+        return token
+
+    def delete_password_reset_token(self, token: PasswordResetToken) -> None:
+        self.db.delete(token)
+        self.db.commit()
+
+    def get_or_create_group(self, name: str):
+        from app.users.models import UserGroupModel
+        group = (
+            self.db.query(UserGroupModel)
+            .filter(UserGroupModel.name == name)
+            .first()
+        )
+        if not group:
+            group = UserGroupModel(name=name)
+            self.db.add(group)
+            self.db.commit()
+            self.db.refresh(group)
+        return group
