@@ -14,8 +14,8 @@ from app.users.models import (
     UserProfile,
     RefreshToken,
 )
-from users.models import UserProfile, User
-from users.schemas import UserResponse, UserProfileUpdate
+from app.users.models import UserProfile, User
+from app.users.schemas import UserResponse, UserProfileUpdate
 
 dotenv.load_dotenv()
 
