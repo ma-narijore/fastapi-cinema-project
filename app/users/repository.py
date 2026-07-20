@@ -13,9 +13,12 @@ from app.users.models import (
     User,
     UserProfile,
     RefreshToken,
+    ActivationToken
 )
+
 from app.users.models import UserProfile, User
 from app.users.schemas import UserResponse, UserProfileUpdate
+from users.models import ActivationToken
 
 dotenv.load_dotenv()
 
@@ -130,3 +133,34 @@ class UserRepository:
         self.db.commit()
 
         return "Refresh token deleted"
+
+    def get_activation_token(self, token: str) -> type[ActivationToken] | None:
+        return (
+            self.db.query(ActivationToken)
+            .filter(ActivationToken.token == token)
+            .first()
+        )
+
+    def get_activation_token_by_user(self, user_id: int) -> type[ActivationToken] | None:
+        return (
+            self.db.query(ActivationToken)
+            .filter(ActivationToken.user_id == user_id)
+            .first()
+        )
+
+    def save_activation_token(self, token: ActivationToken) -> ActivationToken:
+        self.db.add(token)
+        self.db.commit()
+        self.db.refresh(token)
+        return token
+
+    def delete_activation_token(self, token: ActivationToken) -> None:
+        self.db.delete(token)
+        self.db.commit()
+
+    def activate_user(self, user: User, token: ActivationToken) -> User:
+        user.is_active = True
+        self.db.delete(token)
+        self.db.commit()
+        self.db.refresh(user)
+        return user

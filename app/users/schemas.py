@@ -64,8 +64,6 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     is_active: bool
-    group: UserGroup
-    gender: Gender | None
     created_at: datetime
 
     model_config = {
@@ -111,15 +109,9 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
-class ResetPasswordRequest(BaseModel):
-    token: str
-    new_password: str = Field(min_length=8)
-
-
-class ChangePasswordRequest(BaseModel):
-    old_password: str
-    new_password: str
-
-
 class MessageRequest(BaseModel):
     message: str
+
+
+class ResendActivationRequest(BaseModel):
+    email: EmailStr

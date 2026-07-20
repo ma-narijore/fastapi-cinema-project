@@ -1,5 +1,5 @@
 import smtplib
-from app.users.email import EmailMessage
+from users.email import EmailMessage
 from app.core.config import settings
 
 

@@ -1,5 +1,8 @@
+import secrets
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import (
     hash_password,
@@ -8,21 +11,42 @@ from app.core.security import (
     create_refresh_token,
 )
 
-from app.users.models import User
+
+from app.users.models import ActivationToken, User
 from app.users.repository import UserRepository
 from app.users.schemas import (
+    ActivationRequest,
+    ResendActivationRequest,
     UserRegister,
     UserLogin,
     UserResponse,
     TokenResponse,
 )
 
+from app.users.tasks import send_activation_email_task
+
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-
 def get_repository(db: Session = Depends(get_db)) -> UserRepository:
     return UserRepository(db)
+
+
+def _issue_activation_token(repo: UserRepository, user: User) -> ActivationToken:
+    # a user can only hold one activation token (unique user_id); drop the old one
+    existing = repo.get_activation_token_by_user(user.id)
+
+    if existing:
+        repo.delete_activation_token(existing)
+
+    token = ActivationToken(
+        user_id=user.id,
+        token=secrets.token_urlsafe(32),
+        expires_at=datetime.now(timezone.utc)
+        + timedelta(hours=settings.ACTIVATION_TOKEN_EXPIRE_HOURS),
+    )
+
+    return repo.save_activation_token(token)
 
 
 @router.post(
@@ -34,19 +58,21 @@ def register(
     data: UserRegister,
     repo: UserRepository = Depends(get_repository),
 ):
+    # ensure email uniqueness before registration
     if repo.get_by_email(data.email):
-
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
-
     user = User(
         email=data.email,
         hashed_password=hash_password(data.password),
+        is_active=False,
     )
-
-    return repo.create_user(user)
+    user = repo.create_user(user)
+    token = _issue_activation_token(repo, user)
+    send_activation_email_task.delay(user.email, token.token)
+    return user
 
 
 @router.post("/login", response_model=TokenResponse)

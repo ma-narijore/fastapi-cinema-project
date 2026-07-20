@@ -67,7 +67,10 @@ class User(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("user_groups.id"))
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("user_groups.id"),
+        nullable=True,
+    )
 
     group = relationship(
         "UserGroupModel",
@@ -141,7 +144,7 @@ class ActivationToken(Base):
         unique=True,
     )
 
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user = relationship(
         "User",
@@ -164,7 +167,7 @@ class PasswordResetToken(Base):
         unique=True,
     )
 
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user = relationship(
         "User",
@@ -184,7 +187,7 @@ class RefreshToken(Base):
         unique=True,
     )
 
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user = relationship(
         "User",
