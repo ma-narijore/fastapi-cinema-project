@@ -16,9 +16,8 @@ from app.users.models import (
     ActivationToken
 )
 
-from app.users.models import UserProfile, User
 from app.users.schemas import UserResponse, UserProfileUpdate
-from users.models import ActivationToken
+from users.models import RefreshToken
 
 dotenv.load_dotenv()
 
@@ -124,8 +123,8 @@ class UserRepository:
 
         return refresh_token
 
-    def get_refresh_token(self, token: str) -> RefreshToken | None:
-        return self.db.query(RefreshToken).first(RefreshToken.token == token).first()
+    def get_refresh_token(self, token: str) -> type[RefreshToken] | None:
+        return  self.db.query(RefreshToken).filter(RefreshToken.token == token).first()
 
     def delete_refresh_token(self, token: str):
 

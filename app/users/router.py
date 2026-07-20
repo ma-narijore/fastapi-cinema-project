@@ -135,3 +135,42 @@ def delete_user(
         )
 
     repo.delete_user(user)
+
+
+@router.post("/activate", status_code=status.HTTP_200_OK)
+def activate(
+    data: ActivationRequest,
+    repo: UserRepository = Depends(get_repository),
+):
+    token = repo.get_activation_token(data.token)
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid activation token",
+        )
+
+    if token.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Activation token expired. Request a new one.",
+        )
+
+    repo.activate_user(token.user, token)
+
+    return {"message": "Account activated"}
+
+
+@router.post("/resend-activation", status_code=status.HTTP_200_OK)
+def resend_activation(
+    data: ResendActivationRequest,
+    repo: UserRepository = Depends(get_repository),
+):
+    user = repo.get_by_email(data.email)
+
+    if user and not user.is_active:
+        token = _issue_activation_token(repo, user)
+        send_activation_email_task.delay(user.email, token.token)
+
+    return {"message": "If the account exists, a new activation link was sent."}
+
