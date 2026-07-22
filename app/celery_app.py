@@ -13,7 +13,8 @@ celery_app = Celery(
 celery_app.conf.beat_schedule = {
     "delete-expired-tokens": {
         "task": "app.users.tasks.delete_expired_tokens",
-        "schedule": crontab(minute=0, hour="*"),  # hourly cleanup
+        "schedule": crontab(minute=0, hour="*"), # hourly cleanup
+        # "schedule": timedelta(seconds=10),
     },
 }
 

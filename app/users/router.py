@@ -16,7 +16,7 @@ from app.users.repository import UserRepository
 from app.users.schemas import (
     ActivationRequest, ResendActivationRequest, UserRegister, UserLogin,
     UserResponse, TokenResponse, ResetPasswordRequest,
-    LogoutRequest, ChangeGroupRequest, UserGroup, ForgotPasswordRequest,
+    LogoutRequest, ChangeGroupRequest, UserGroup, ForgotPasswordRequest, ChangePasswordRequest
 )
 
 from app.users.tasks import send_activation_email_task, send_reset_email_task
@@ -199,6 +199,25 @@ def reset_password(
     repo.delete_password_reset_token(token)
 
     return {"message": "Password reset successfully"}
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+        data: ChangePasswordRequest,
+        current_user: User = Depends(get_current_user),
+        repo: UserRepository = Depends(get_repository),
+):
+    # complexity of new_password is enforced by ChangePasswordRequest's validator
+    if not verify_password(data.old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    current_user.hashed_password = hash_password(data.new_password)
+    repo.update_user(current_user)
+
+    return {"message": "Password changed successfully"}
 
 
 @router.get("/", response_model=list[UserResponse])
