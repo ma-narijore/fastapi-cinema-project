@@ -18,7 +18,7 @@ from app.users.models import (
 )
 
 from app.users.schemas import UserResponse, UserProfileUpdate
-from users.models import PasswordResetToken
+
 
 dotenv.load_dotenv()
 

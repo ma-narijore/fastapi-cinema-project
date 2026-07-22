@@ -3,7 +3,10 @@ services:
     build: .
     container_name: fastapi_web
 
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+    volumes:
+      - .:/app
 
     ports:
       - "8000:8000"
@@ -14,6 +17,7 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/1
       MAIL_SERVER: mailpit
       MAIL_PORT: 1025
+      SECRET_KEY: super_secret_key_123456789
 
     depends_on:
       postgres:
