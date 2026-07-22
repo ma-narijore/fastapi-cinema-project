@@ -1,4 +1,29 @@
 services:
+  web:
+    build: .
+    container_name: fastapi_web
+
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/cinema
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      MAIL_SERVER: mailpit
+      MAIL_PORT: 1025
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+
   postgres:
     image: postgres:17
     container_name: fastapi_postgres
@@ -21,6 +46,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
 
   redis:
     image: redis:7-alpine
@@ -50,6 +76,7 @@ services:
       - "8025:8025"
 
     restart: unless-stopped
+
 
 volumes:
   postgres_data:
