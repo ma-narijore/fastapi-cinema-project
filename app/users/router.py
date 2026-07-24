@@ -221,7 +221,12 @@ def change_password(
 
 
 @router.get("/", response_model=list[UserResponse])
-def list_users(repo: UserRepository = Depends(get_repository)):
+def list_users(
+        repo: UserRepository = Depends(get_repository),
+        _: User = Depends(
+            require_group(UserGroup.MODERATOR.value, UserGroup.ADMIN.value)
+        ),
+):
     return repo.get_all_users()
 
 
@@ -229,6 +234,7 @@ def list_users(repo: UserRepository = Depends(get_repository)):
 def get_user(
     user_id: int,
     repo: UserRepository = Depends(get_repository),
+    _: User = Depends(get_current_user),
 ):
     user = repo.get_by_id(user_id)
 
@@ -245,6 +251,7 @@ def get_user(
 def delete_user(
     user_id: int,
     repo: UserRepository = Depends(get_repository),
+    _: User = Depends(require_group(UserGroup.ADMIN.value)),
 ):
     user = repo.get_by_id(user_id)
 
@@ -255,3 +262,51 @@ def delete_user(
         )
 
     repo.delete_user(user)
+
+
+@router.patch("/{user_id}/group", response_model=UserResponse)
+def change_user_group(
+        user_id: int,
+        data: ChangeGroupRequest,
+        repo: UserRepository = Depends(get_repository),
+        _: User = Depends(require_group(UserGroup.ADMIN.value)),
+):
+    user = repo.get_by_id(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    group = repo.get_or_create_group(data.group.value)
+    user.group_id = group.id
+    repo.update_user(user)
+
+    return user
+
+
+@router.post("/{user_id}/activate", response_model=UserResponse)
+def admin_activate_user(
+        user_id: int,
+        repo: UserRepository = Depends(get_repository),
+        _: User = Depends(require_group(UserGroup.ADMIN.value)),
+):
+    user = repo.get_by_id(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    user.is_active = True
+
+    # drop any outstanding activation token now that the account is active
+    existing = repo.get_activation_token_by_user(user.id)
+    if existing:
+        repo.delete_activation_token(existing)
+
+    repo.update_user(user)
+
+    return user

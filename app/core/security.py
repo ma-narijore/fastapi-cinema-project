@@ -122,7 +122,6 @@ def get_current_user(
 
 def require_group(*allowed_groups: str):
 
-
     def checker(current_user=Depends(get_current_user)):
 
         group_name = current_user.group.name if current_user.group else None
