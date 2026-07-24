@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from sqlalchemy import (
     String,
@@ -17,7 +17,7 @@ from sqlalchemy.orm import (
 
 from app.core.database import Base
 
-from schemas import UserGroup, Gender
+from app.users.schemas import UserGroup, Gender
 
 
 class UserGroupModel(Base):
@@ -58,17 +58,18 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.utcnow,
+        default=lambda: datetime.now(timezone.utc),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
     group_id: Mapped[int] = mapped_column(
-        ForeignKey("user_groups.id")
+        ForeignKey("user_groups.id"),
+        nullable=True,
     )
 
     group = relationship(
@@ -143,7 +144,7 @@ class ActivationToken(Base):
         unique=True,
     )
 
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user = relationship(
         "User",
@@ -166,7 +167,7 @@ class PasswordResetToken(Base):
         unique=True,
     )
 
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user = relationship(
         "User",
@@ -179,18 +180,17 @@ class RefreshToken(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id")
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     token: Mapped[str] = mapped_column(
         String(255),
         unique=True,
     )
 
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user = relationship(
         "User",
         back_populates="refresh_tokens",
     )
+

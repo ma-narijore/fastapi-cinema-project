@@ -1,8 +1,32 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from datetime import datetime, date
 
 from enum import Enum
+
+from app.core.security import validate_password_complexity  # or inline the regex
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def _check(cls, v):
+        validate_password_complexity(v)
+        return v
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def _check(cls, v):
+        validate_password_complexity(v)
+        return v
 
 
 class UserGroup(str, Enum):
@@ -19,6 +43,11 @@ class Gender(str, Enum):
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
+    @field_validator("password")
+    @classmethod
+    def _check(cls, v):
+        validate_password_complexity(v)
+        return v
 
 
 class UserLogin(BaseModel):
@@ -29,7 +58,7 @@ class UserLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
-    token_type: str = 'bearer'
+    token_type: str = "bearer"
 
 
 class RefreshTokenRequest(BaseModel):
@@ -40,8 +69,6 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     is_active: bool
-    group: UserGroup
-    gender: Gender
     created_at: datetime
 
     model_config = {
@@ -57,9 +84,7 @@ class UserProfileResponse(BaseModel):
     date_of_birth: date | None = None
     info: str | None = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class UserProfileUpdate(BaseModel):
@@ -78,9 +103,7 @@ class CurrentUserUpdate(BaseModel):
     group: UserGroup
     profile: UserProfileResponse | None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class ActivationRequest(BaseModel):
@@ -91,15 +114,17 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
-class ResetPasswordRequest(BaseModel):
-    token: str
-    new_password: str = Field(min_length=8)
-
-
-class ChangePasswordRequest(BaseModel):
-    old_password: str
-    new_password: str
-
-
 class MessageRequest(BaseModel):
     message: str
+
+
+class ResendActivationRequest(BaseModel):
+    email: EmailStr
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: str
+
+
+class ChangeGroupRequest(BaseModel):
+    group: UserGroup

@@ -10,10 +10,8 @@ from users.schemas import UserProfileUpdate
 
 
 class UserService:
-
     def __init__(self, db: Session):
         self.repository = UserRepository(db)
-
 
     def register(self, data: schemas.UserRegister):
 
@@ -40,11 +38,10 @@ class UserService:
 
         return user
 
-
     def authenticate(
-            self,
-            email: str,
-            password: str,
+        self,
+        email: str,
+        password: str,
     ):
         user = self.repository.get_by_email(email)
         if not user:
@@ -57,7 +54,6 @@ class UserService:
 
         return user
 
-
     def login(self, data: schemas.UserLogin):
 
         user = self.authenticate(data.email, data.password)
@@ -67,7 +63,6 @@ class UserService:
         self.repository.save_refresh_token(access_and_refresh["refresh_token"])
 
         return access_and_refresh
-
 
     def refresh(self, user: User):
 
@@ -79,7 +74,6 @@ class UserService:
         create_jwt_token(user)
 
         return
-
 
     def logout(self, user: User):
 
@@ -93,7 +87,6 @@ class UserService:
 
         self.repository.delete_refresh_token(user.refresh_tokens)
 
-
     def get_me(self, user: User):
 
         user = self.repository.get_by_email(user.email)
@@ -103,23 +96,14 @@ class UserService:
 
         return user
 
-
     def update_profile(self, profile: UserProfileUpdate):
 
         self.repository.update_profile(profile)
 
+    def activate_account(self, user: User): ...
 
-    def activate_account(self, user: User):
-        ...
+    def forgot_password(self, user: User): ...
 
+    def reset_password(self, user: User): ...
 
-    def forgot_password(self, user: User):
-        ...
-
-
-    def reset_password(self, user: User):
-        ...
-
-
-    def change_password(self, user: User):
-        ...
+    def change_password(self, user: User): ...
