@@ -5,7 +5,6 @@ from app.core.database import get_db
 from app.core.security import decode_token
 from app.users.models import User
 from app.users.schemas import UserGroup
-from users.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 

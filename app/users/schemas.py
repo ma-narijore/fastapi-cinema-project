@@ -126,9 +126,5 @@ class LogoutRequest(BaseModel):
     refresh_token: str
 
 
-class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
-
-
 class ChangeGroupRequest(BaseModel):
     group: UserGroup
