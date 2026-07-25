@@ -155,4 +155,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  minio:
+  minio_data:
