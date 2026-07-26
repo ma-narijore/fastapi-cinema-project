@@ -23,6 +23,7 @@ dependencies = [
     "passlib (==1.7.4)",
     "bcrypt (==4.2.1)",
     "python-multipart (==0.0.32)",
+    "httpx (>=0.28.1,<0.29.0)",
 ]
 
 [tool.poetry.group.dev.dependencies]
@@ -33,3 +34,6 @@ ruff = "==0.15.21"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
