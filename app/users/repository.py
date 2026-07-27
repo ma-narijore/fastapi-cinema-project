@@ -1,12 +1,4 @@
-import os
-from datetime import datetime, timedelta, timezone
-from typing import Dict
-
-import dotenv
-
-from jose import jwt
-
-from pydantic.v1 import EmailStr
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 from app.users.models import (
@@ -17,56 +9,17 @@ from app.users.models import (
     PasswordResetToken,
 )
 
-from app.users.schemas import UserResponse, UserProfileUpdate
-
-
-dotenv.load_dotenv()
-
-
-def create_refresh_token(user: User) -> str:
-
-    if not user:
-        raise Exception("User does not exist")
-
-    refresh_payload = {
-        "sub": user.id,
-        "exp": datetime.now(timezone.utc)
-        + timedelta(days=float(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS"))),
-        "type": "refresh",
-    }
-    refresh_token = jwt.encode(
-        refresh_payload, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM")
-    )
-
-    return refresh_token
-
-
-def create_jwt_token(data: UserResponse) -> Dict[str, str]:
-    payload = data.model_dump()
-
-    expires_in = datetime.now(timezone.utc) + timedelta(
-        minutes=float(os.getenv("JWT_EXPIRES_IN"))
-    )
-
-    payload.update({"exp": expires_in})
-
-    jwt_token = jwt.encode(
-        payload, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM")
-    )
-
-    refresh_token = create_refresh_token(payload)
-
-    return {"access_token": jwt_token, "refresh_token": refresh_token}
+from app.users.schemas import UserProfileUpdate
 
 
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, user_id: int) -> type[User] | None:
+    def get_by_id(self, user_id: int) -> User | None:
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def get_by_email(self, email: EmailStr) -> type[User] | None:
+    def get_by_email(self, email: EmailStr) -> User | None:
         return self.db.query(User).filter(User.email == email).first()
 
     def create_user(self, user: User) -> User:
@@ -101,7 +54,7 @@ class UserRepository:
 
         return profile
 
-    def update_profile(self, profile: UserProfileUpdate) -> type[UserProfile] | None:
+    def update_profile(self, profile: UserProfileUpdate) -> UserProfile | None:
 
         self.db.commit()
         self.db.refresh(profile)
@@ -112,7 +65,7 @@ class UserRepository:
             .first()
         )
 
-    def get_profile(self, user_id: int) -> type[UserProfile] | None:
+    def get_profile(self, user_id: int) -> UserProfile | None:
 
         return self.db.query(UserProfile).filter(UserProfile.id == user_id).first()
 
@@ -124,17 +77,17 @@ class UserRepository:
 
         return refresh_token
 
-    def get_refresh_token(self, token: str) -> type[RefreshToken] | None:
+    def get_refresh_token(self, token: str) -> RefreshToken | None:
         return  self.db.query(RefreshToken).filter(RefreshToken.token == token).first()
 
-    def get_activation_token(self, token: str) -> type[ActivationToken] | None:
+    def get_activation_token(self, token: str) -> ActivationToken | None:
         return (
             self.db.query(ActivationToken)
             .filter(ActivationToken.token == token)
             .first()
         )
 
-    def get_activation_token_by_user(self, user_id: int) -> type[ActivationToken] | None:
+    def get_activation_token_by_user(self, user_id: int) -> ActivationToken | None:
         return (
             self.db.query(ActivationToken)
             .filter(ActivationToken.user_id == user_id)
@@ -164,14 +117,14 @@ class UserRepository:
         return "Refresh token deleted"
 
     # --- password reset tokens ---
-    def get_password_reset_token(self, token: str) -> type[PasswordResetToken] | None:
+    def get_password_reset_token(self, token: str) -> PasswordResetToken | None:
         return (
             self.db.query(PasswordResetToken)
             .filter(PasswordResetToken.token == token)
             .first()
         )
 
-    def get_password_reset_token_by_user(self, user_id: int) -> type[PasswordResetToken] | None:
+    def get_password_reset_token_by_user(self, user_id: int) -> PasswordResetToken | None:
         return (
             self.db.query(PasswordResetToken)
             .filter(PasswordResetToken.user_id == user_id)

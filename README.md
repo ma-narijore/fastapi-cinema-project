@@ -102,7 +102,8 @@ Example response:
 
 ## Save the access token
 
-For better usage add access_token to ModHeader or any other header modify:
+For better usage add access_token to ModHeader or any other header modify 
+`I used HeaderSmith` in google extensions:
 
 ```bash
 Authorization Bearer {token}
