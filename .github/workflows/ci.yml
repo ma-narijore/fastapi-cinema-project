@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install --no-cache-dir poetry==2.4.1
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Lint with Ruff
+        run: poetry run ruff check .
+
+      - name: Run tests
+        env:
+          SECRET_KEY: test-secret-key
+          ALGORITHM: HS256
+          DATABASE_URL: "sqlite://"
+        run: poetry run pytest -v
