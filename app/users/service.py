@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.users.repository import UserRepository, create_jwt_token, create_refresh_token
+from app.users.repository import UserRepository, create_jwt_token
 from users import schemas
 from users.models import User, UserProfile
 
