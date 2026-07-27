@@ -12,7 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
-) -> type[User]:
+) -> User:
     payload = decode_token(token, "access")
     user = db.query(User).filter(User.id == int(payload["sub"])).first()
     if user is None:

@@ -1,11 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.users.repository import UserRepository, create_jwt_token
+from app.users.repository import UserRepository #create_jwt_token
 from users import schemas
 from users.models import User, UserProfile
 
-from dependecies import password_hash
+# from dependecies import password_hash
 from users.schemas import UserProfileUpdate
 
 
