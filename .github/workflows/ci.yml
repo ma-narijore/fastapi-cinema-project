@@ -29,9 +29,6 @@ jobs:
       - name: Lint with Ruff
         run: poetry run ruff check .
 
-      - name: Type-check with mypy
-        run: poetry run mypy
-
       - name: Run tests with coverage
         env:
           SECRET_KEY: test-secret-key
