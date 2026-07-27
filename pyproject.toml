@@ -24,11 +24,17 @@ dependencies = [
     "bcrypt (==4.2.1)",
     "python-multipart (==0.0.32)",
     "httpx (>=0.28.1,<0.29.0)",
+    "pytest (>=9.1.1,<10.0.0)",
 ]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "==9.1.1"
 ruff = "==0.15.21"
+
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
 
 
 [build-system]

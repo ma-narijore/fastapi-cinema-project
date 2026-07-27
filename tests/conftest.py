@@ -1,6 +1,16 @@
+import os
+
+# Ensure required settings exist before any `app.*` import triggers
+# `Settings()` / `load_dotenv()`. Tests must not depend on a local .env file.
+os.environ.setdefault("SECRET_KEY", "test-secret-key")
+os.environ.setdefault("ALGORITHM", "HS256")
+os.environ.setdefault("DATABASE_URL", "sqlite://")
+
+from datetime import timezone
+
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -13,6 +23,19 @@ from app.main import app
 from app.users import tasks as user_tasks
 from app.users.models import User
 from app.users.schemas import UserGroup
+from app.users.models import ActivationToken, PasswordResetToken, RefreshToken
+
+
+def _coerce_expires_at_to_utc(target, context):
+    # SQLite ignores `DateTime(timezone=True)` and returns naive datetimes,
+    # which breaks the router's aware/naive comparisons. Re-attach UTC on load
+    # so tests behave like the production (PostgreSQL) database.
+    if target.expires_at is not None and target.expires_at.tzinfo is None:
+        target.expires_at = target.expires_at.replace(tzinfo=timezone.utc)
+
+
+for _model in (ActivationToken, PasswordResetToken, RefreshToken):
+    event.listen(_model, "load", _coerce_expires_at_to_utc)
 
 
 @pytest.fixture()

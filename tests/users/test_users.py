@@ -18,13 +18,6 @@ from app.users.schemas import UserGroup
 
 VALID_PASSWORD = "Str0ng!Pass"
 
-Unit
-tests: utility
-functions and data
-validation
-logic
-
-
 # ---------------------------------------------------------------------------
 class TestPasswordHashing:
     def test_hash_is_not_plaintext_and_verifies(self):
