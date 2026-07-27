@@ -7,14 +7,14 @@ from app.core.database import get_db
 from app.core.security import (
     hash_password, verify_password,
     create_access_token, create_refresh_token,
-    get_current_user, require_group, decode_token,
+    get_current_user, require_group,
 )
 
 
 from app.users.models import ActivationToken, User, RefreshToken, PasswordResetToken
 from app.users.repository import UserRepository
 from app.users.schemas import (
-    ActivationRequest, ResendActivationRequest, UserRegister, UserLogin,
+    ResendActivationRequest, UserRegister, UserLogin,
     UserResponse, TokenResponse, ResetPasswordRequest,
     LogoutRequest, ChangeGroupRequest, UserGroup, ForgotPasswordRequest, ChangePasswordRequest
 )
