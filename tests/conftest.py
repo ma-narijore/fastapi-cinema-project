@@ -26,16 +26,18 @@ from app.users.schemas import UserGroup
 from app.users.models import ActivationToken, PasswordResetToken, RefreshToken
 
 
-def _coerce_expires_at_to_utc(target, context):
+def _coerce_expires_at_to_utc(target, context, *args):
     # SQLite ignores `DateTime(timezone=True)` and returns naive datetimes,
     # which breaks the router's aware/naive comparisons. Re-attach UTC on load
-    # so tests behave like the production (PostgreSQL) database.
+    # (and on refresh after an expire/commit) so tests behave like the
+    # production (PostgreSQL) database.
     if target.expires_at is not None and target.expires_at.tzinfo is None:
         target.expires_at = target.expires_at.replace(tzinfo=timezone.utc)
 
 
 for _model in (ActivationToken, PasswordResetToken, RefreshToken):
     event.listen(_model, "load", _coerce_expires_at_to_utc)
+    event.listen(_model, "refresh", _coerce_expires_at_to_utc)
 
 
 @pytest.fixture()
